@@ -1,0 +1,37 @@
+# IDE
+.idea/
+.vscode/
+.claude/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Java / Maven
+code/target/
+*.class
+
+# Node dependencies and caches
+node_modules/
+code/src/main/resources/front/front/node_modules/
+code/src/main/resources/admin/admin/node_modules/
+code/src/main/resources/front/front/.cache/
+code/src/main/resources/admin/admin/.cache/
+
+# Logs
+*.log
+logs/
+
+# Runtime upload/cache files
+upload/
+static/upload/
+
+# Archives and generated packages
+*.jar
+*.war
+*.zip
+
+# Environment
+.env
+.env.*

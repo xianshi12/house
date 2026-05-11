@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.IntentDepositPaymentDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.entity.IntentDepositPaymentEntity" id="intentDepositPaymentMap">
+        <result property="orderNo" column="order_no"/>
+        <result property="propertyName" column="property_name"/>
+        <result property="houseType" column="house_type"/>
+        <result property="propertyImage" column="property_image"/>
+        <result property="floor" column="floor"/>
+        <result property="salePrice" column="sale_price"/>
+        <result property="intentDepositRatio" column="intent_deposit_ratio"/>
+        <result property="intentDeposit" column="intent_deposit"/>
+        <result property="floorArea" column="floor_area"/>
+        <result property="rooms" column="rooms"/>
+        <result property="district" column="district"/>
+        <result property="address" column="address"/>
+        <result property="developerCode" column="developer_code"/>
+        <result property="developerName" column="developer_name"/>
+        <result property="account" column="account"/>
+        <result property="fullName" column="full_name"/>
+        <result property="phone" column="phone"/>
+        <result property="registerTime" column="register_time"/>
+        <result property="isPaid" column="is_paid"/>
+    </resultMap>
+
+	<select id="selectListVO"
+		resultType="com.entity.vo.IntentDepositPaymentVO" >
+		SELECT * FROM intent_deposit_payment  intent_deposit_payment         
+        <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+	<select id="selectVO"
+		resultType="com.entity.vo.IntentDepositPaymentVO" >
+		SELECT  intent_deposit_payment.* FROM intent_deposit_payment  intent_deposit_payment 	
+ 		<where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+
+    <select id="selectListView"
+		resultType="com.entity.view.IntentDepositPaymentView" >
+
+		SELECT  intent_deposit_payment.* FROM intent_deposit_payment  intent_deposit_payment 	        
+        <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+	<select id="selectView"
+		resultType="com.entity.view.IntentDepositPaymentView" >
+		SELECT * FROM intent_deposit_payment  intent_deposit_payment <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+
+
+</mapper>

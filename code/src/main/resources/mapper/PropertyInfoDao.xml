@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.PropertyInfoDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.entity.PropertyInfoEntity" id="propertyInfoMap">
+        <result property="propertyName" column="property_name"/>
+        <result property="houseType" column="house_type"/>
+        <result property="propertyImage" column="property_image"/>
+        <result property="floor" column="floor"/>
+        <result property="rooms" column="rooms"/>
+        <result property="district" column="district"/>
+        <result property="salePrice" column="sale_price"/>
+        <result property="details" column="details"/>
+        <result property="address" column="address"/>
+        <result property="floorArea" column="floor_area"/>
+        <result property="developerCode" column="developer_code"/>
+        <result property="developerName" column="developer_name"/>
+        <result property="saleContract" column="sale_contract"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="clicktime" column="clicktime"/>
+        <result property="discussnum" column="discussnum"/>
+        <result property="storeupnum" column="storeupnum"/>
+    </resultMap>
+
+	<select id="selectListVO"
+		resultType="com.entity.vo.PropertyInfoVO" >
+		SELECT * FROM property_info  property_info         
+        <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+	<select id="selectVO"
+		resultType="com.entity.vo.PropertyInfoVO" >
+		SELECT  property_info.* FROM property_info  property_info 	
+ 		<where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+
+    <select id="selectListView"
+		resultType="com.entity.view.PropertyInfoView" >
+
+		SELECT  property_info.* FROM property_info  property_info 	        
+        <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+	<select id="selectView"
+		resultType="com.entity.view.PropertyInfoView" >
+		SELECT * FROM property_info  property_info <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+
+    <select id="selectValue" resultType="map" >
+        SELECT ${params.xColumn}, ROUND(sum(${params.yColumn}),1) total FROM property_info
+        <where> 1=1 ${ew.sqlSegment}</where>
+        group by ${params.xColumn}
+    </select>
+
+    <select id="selectTimeStatValue" resultType="map" >
+        <if test = 'params.timeStatType == "日"'>
+                SELECT DATE_FORMAT(${params.xColumn},'%Y-%m-%d') ${params.xColumn}, sum(${params.yColumn}) total FROM property_info
+                <where> 1=1 ${ew.sqlSegment}</where>
+                group by DATE_FORMAT(${params.xColumn},'%Y-%m-%d')
+        </if>
+        <if test = 'params.timeStatType == "月"'>
+                SELECT DATE_FORMAT(${params.xColumn},'%Y-%m') ${params.xColumn}, sum(${params.yColumn}) total FROM property_info
+                <where> 1=1 ${ew.sqlSegment}</where>
+                group by DATE_FORMAT(${params.xColumn},'%Y-%m')
+        </if>
+        <if test='params.timeStatType == "季"'>
+                SELECT CONCAT(YEAR(${params.xColumn}), ' - ', ELT(QUARTER(${params.xColumn}), '第一季度', '第二季度', '第三季度', '第四季度')) as ${params.xColumn}, sum(${params.yColumn}) total FROM property_info
+                <where> 1=1 ${ew.sqlSegment}</where>
+                group by CONCAT(YEAR(${params.xColumn}), ' - ', ELT(QUARTER(${params.xColumn}), '第一季度', '第二季度', '第三季度', '第四季度'))
+        </if>
+        <if test = 'params.timeStatType == "年"'>
+                SELECT DATE_FORMAT(${params.xColumn},'%Y') ${params.xColumn}, sum(${params.yColumn}) total FROM property_info
+                <where> 1=1 ${ew.sqlSegment}</where>
+                group by DATE_FORMAT(${params.xColumn},'%Y')
+        </if>
+    </select>
+
+    <select id="selectGroup" resultType="map" >
+        SELECT ${params.column} , count(1) total FROM property_info
+        <where> 1=1 ${ew.sqlSegment}</where>
+        group by ${params.column}
+    </select>
+
+
+
+
+</mapper>
