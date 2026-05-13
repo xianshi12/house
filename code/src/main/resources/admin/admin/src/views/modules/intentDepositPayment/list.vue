@@ -385,6 +385,7 @@
 						type: "success",
 						duration: 1500,
 						onClose: () => {
+							this.searchForm.ispay = '';
 							this.getDataList()
 						}
 					});

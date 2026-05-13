@@ -6,6 +6,9 @@ server:
     servlet:
         context-path: /house
 
+file:
+  upload-dir: src/main/resources/static/upload
+
 spring:
     datasource:
         driverClassName: com.mysql.cj.jdbc.Driver

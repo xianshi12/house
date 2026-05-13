@@ -61,7 +61,7 @@
 				<el-input-number v-model="ruleForm.yixiangdingjin" placeholder="意向定金" :disabled=" false ||ro.yixiangdingjin"></el-input-number>
 			</el-form-item>
 			<el-form-item class="add-item" label="尾款金额" prop="remainingAmount">
-				<el-input v-model="remainingAmount" placeholder="尾款金额" disabled></el-input>
+				<el-input :value="weikuanjine" placeholder="尾款金额" disabled></el-input>
 			</el-form-item>
 			<el-form-item class="add-item" label="开发商号" prop="developerCode">
 				<el-input v-model="ruleForm.kaifashanghao" 
@@ -107,6 +107,17 @@
 					:fileUrls="ruleForm.hetong?ruleForm.hetong:''"
 					@change="hetongUploadChange"
 					></file-upload>
+			</el-form-item>
+			<el-form-item class="add-item" label="签署合同" prop="userContract">
+				<file-upload
+					tip="点击上传签署后的合同"
+					action="file/upload"
+					:limit="1"
+					:type="3"
+					:multiple="true"
+					:fileUrls="ruleForm.yonghuhetong?ruleForm.yonghuhetong:''"
+					@change="yonghuhetongUploadChange"
+				></file-upload>
 			</el-form-item>  
 
 			<el-form-item class="add-btn-item">
@@ -150,7 +161,8 @@
 					shenfenzheng : false,
 					dengjishijian : false,
 					hetong : false,
-					sfsh : false,
+						yonghuhetong : false,
+										sfsh : false,
 					shhf : false,
 					ispay : false,
 				},
@@ -177,6 +189,7 @@
 					shenfenzheng: '',
 					dengjishijian: '',
 					hetong: '',
+					yonghuhetong: '',
 				},
 
 
@@ -233,7 +246,9 @@
 					hetong: [
 						{ required: true, message: '合同不能为空', trigger: 'blur' },
 					],
-					sfsh: [
+						yonghuhetong: [
+						],
+										sfsh: [
 					],
 					shhf: [
 					],
@@ -426,6 +441,10 @@
 			// 提交
 			async onSubmit() {
 				this.ruleForm.weikuanjine = this.weikuanjine
+					if(this.type=='cross') {
+						this.ruleForm.sfsh = '待审核';
+						this.ruleForm.shhf = '';
+					}
 				if(!this.ruleForm.id) {
 					delete this.ruleForm.userid
 				}
@@ -485,6 +504,9 @@
 			hetongUploadChange(fileUrls) {
 				this.ruleForm.hetong = fileUrls.replace(new RegExp(this.$config.baseUrl,"g"),"");
 			},
+				yonghuhetongUploadChange(fileUrls) {
+					this.ruleForm.yonghuhetong = fileUrls.replace(new RegExp(this.$config.baseUrl,"g"),"");
+				},
 		}
 	};
 </script>

@@ -138,6 +138,29 @@
 			handleExceed(files, fileList) {
 				this.$message.warning(`最多上传${this.limit}张图片`);
 			},
+			normalizeFileUrl(url) {
+				if (!url) {
+					return ''
+				}
+				let fileUrl = String(url).split("?")[0].trim()
+				if (fileUrl.indexOf(this.baseUrl) === 0) {
+					fileUrl = fileUrl.replace(this.baseUrl, '')
+				}
+				if (fileUrl.indexOf(this.baseUrl2 + '/') === 0) {
+					fileUrl = fileUrl.replace(this.baseUrl2 + '/', '')
+				}
+				if (fileUrl.indexOf('/' + this.baseUrl2 + '/') === 0) {
+					fileUrl = fileUrl.replace('/' + this.baseUrl2 + '/', '')
+				}
+				return fileUrl
+			},
+			getShowUrl(url) {
+				let fileUrl = this.normalizeFileUrl(url)
+				if (!fileUrl || fileUrl.startsWith("http")) {
+					return fileUrl
+				}
+				return this.baseUrl + fileUrl
+			},
 			// 重新对fileList进行赋值
 			setFileList(fileList) {
 				var fileArray = [];
@@ -146,17 +169,15 @@
 				var token = storage.get("frontToken");
 				let _this = this;
 				fileList.forEach(function(item, index) {
-					var url = item.url.split("?")[0];
-					if (!url.startsWith("http")) {
-						url = _this.baseUrl + url
-					}
+					var rawUrl = _this.normalizeFileUrl(item.url);
+					var url = _this.getShowUrl(rawUrl);
 					var name = item.name;
 					var file = {
 						name: name,
 						url: url + "?token=" + token
 					};
 					fileArray.push(file);
-					fileUrlArray.push(url);
+					fileUrlArray.push(rawUrl);
 				});
 				this.fileList = fileArray;
 				this.fileUrlList = fileUrlArray;

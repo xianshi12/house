@@ -153,7 +153,10 @@ public class StoreupController {
     @RequestMapping("/save")
     public R save(@RequestBody StoreupEntity storeup, HttpServletRequest request){
         //ValidatorUtils.validateEntity(storeup);
-    	storeup.setUserid((Long)request.getSession().getAttribute("userId"));
+        R checkResult = prepareStoreup(storeup, request);
+        if (checkResult != null) {
+            return checkResult;
+        }
         storeupService.insert(storeup);
         return R.ok().put("data",storeup.getId());
     }
@@ -164,8 +167,37 @@ public class StoreupController {
     @RequestMapping("/add")
     public R add(@RequestBody StoreupEntity storeup, HttpServletRequest request){
         //ValidatorUtils.validateEntity(storeup);
+        R checkResult = prepareStoreup(storeup, request);
+        if (checkResult != null) {
+            return checkResult;
+        }
         storeupService.insert(storeup);
         return R.ok().put("data",storeup.getId());
+    }
+
+    private R prepareStoreup(StoreupEntity storeup, HttpServletRequest request) {
+        Object userIdObj = request.getSession().getAttribute("userId");
+        if (userIdObj == null) {
+            return R.error(401, "请先登录后再收藏");
+        }
+        Long userId = (Long) userIdObj;
+        if (userId == null || userId <= 0) {
+            return R.error(401, "请先登录后再收藏");
+        }
+        if (storeup == null || storeup.getRefid() == null || StringUtils.isBlank(storeup.getTablename()) || StringUtils.isBlank(storeup.getType())) {
+            return R.error("收藏信息不完整");
+        }
+        storeup.setUserid(userId);
+        EntityWrapper<StoreupEntity> ew = new EntityWrapper<StoreupEntity>();
+        ew.eq("userid", userId);
+        ew.eq("refid", storeup.getRefid());
+        ew.eq("tablename", storeup.getTablename());
+        ew.eq("type", storeup.getType());
+        StoreupEntity exists = storeupService.selectOne(ew);
+        if (exists != null) {
+            return R.error(409, "已收藏，请勿重复收藏");
+        }
+        return null;
     }
 
 

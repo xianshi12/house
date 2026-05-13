@@ -116,6 +116,7 @@ export default {
 		}).then(({ data }) => {
 			if (data && data.code === 0) {
 				this.ruleForm = data.data;
+				this.syncAvatarFields();
 			} else {
 				this.$message.error(data.msg);
 			}
@@ -124,14 +125,52 @@ export default {
 		this.kaifashangxingbieOptions = "男,女".split(',')
 	},
 	methods: {
+		normalizeFilePath(path) {
+			if (!path) {
+				return ''
+			}
+			let filePath = String(path).split(',')[0].split('?')[0].trim()
+			const bu = this.$base.url || '';
+			if (bu && filePath.indexOf(bu) === 0) {
+				filePath = filePath.replace(bu, '')
+			}
+			if (filePath.indexOf('/' + this.$base.name + '/') === 0) {
+				filePath = filePath.replace('/' + this.$base.name + '/', '')
+			}
+			if (filePath.indexOf(this.$base.name + '/') === 0) {
+				filePath = filePath.replace(this.$base.name + '/', '')
+			}
+			if (filePath.indexOf('/upload/') === 0) {
+				filePath = filePath.substring(1)
+			}
+			return filePath
+		},
+		syncAvatarFields() {
+			if (this.flag == 'user' || this.flag == 'developer') {
+				const filePath = this.normalizeFilePath(this.ruleForm.touxiang || this.ruleForm.avatar)
+				this.$set(this.ruleForm, 'touxiang', filePath)
+				this.$set(this.ruleForm, 'avatar', filePath)
+			}
+			if (this.flag == 'users') {
+				const filePath = this.normalizeFilePath(this.ruleForm.image || this.ruleForm.avatar)
+				this.$set(this.ruleForm, 'image', filePath)
+				this.$set(this.ruleForm, 'avatar', filePath)
+			}
+		},
 		yonghutouxiangUploadChange(fileUrls) {
-			this.ruleForm.touxiang = fileUrls;
+			const filePath = this.normalizeFilePath(fileUrls)
+			this.$set(this.ruleForm, 'touxiang', filePath);
+			this.$set(this.ruleForm, 'avatar', filePath);
 		},
 		kaifashangtouxiangUploadChange(fileUrls) {
-			this.ruleForm.touxiang = fileUrls;
+			const filePath = this.normalizeFilePath(fileUrls)
+			this.$set(this.ruleForm, 'touxiang', filePath);
+			this.$set(this.ruleForm, 'avatar', filePath);
 		},
 		usersimageUploadChange(fileUrls) {
-			this.ruleForm.image = fileUrls;
+			const filePath = this.normalizeFilePath(fileUrls)
+			this.$set(this.ruleForm, 'image', filePath);
+			this.$set(this.ruleForm, 'avatar', filePath);
 		},
 		onUpdateHandler() {
 			if((!this.ruleForm.zhanghao)&& 'user'==this.flag){
@@ -163,9 +202,6 @@ export default {
 			}
 
 
-			if(this.ruleForm.touxiang!=null) {
-				this.ruleForm.touxiang = this.ruleForm.touxiang.replace(new RegExp(this.$base.url,"g"),"");
-			}
 			if((!this.ruleForm.kaifashanghao)&& 'developer'==this.flag){
 				this.$message.error('开发商号不能为空');
 				return
@@ -201,25 +237,18 @@ export default {
 			}
 
 
-			if(this.ruleForm.touxiang!=null) {
-				this.ruleForm.touxiang = this.ruleForm.touxiang.replace(new RegExp(this.$base.url,"g"),"");
-			}
 			if('users'==this.flag && this.ruleForm.username.trim().length<1) {
 				this.$message.error(`用户名不能为空`);
 				return	
 			}
-			if(this.flag=='users'){
-				this.ruleForm.image = this.ruleForm.image.replace(new RegExp(this.$base.url,"g"),"")
-			}
+			this.syncAvatarFields();
 			this.$http({
 				url: `${this.$storage.get("sessionTable")}/update`,
 				method: "post",
 				data: this.ruleForm
 			}).then(({ data }) => {
 				if (data && data.code === 0) {
-					if(this.flag=='users'){
-						this.$storage.set('headportrait',this.ruleForm.image)
-					}
+					this.$storage.set('headportrait', this.ruleForm.touxiang || this.ruleForm.image || this.ruleForm.avatar)
 					this.$message({
 						message: "修改信息成功",
 						type: "success",

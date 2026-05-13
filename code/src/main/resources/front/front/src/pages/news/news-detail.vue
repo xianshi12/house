@@ -97,6 +97,8 @@
 				currentIndex: 0,
 				allList: [],
 				storeupType: false,
+				zanLoading: false,
+				collectLoading: false,
 			}
 		},
 		created() {
@@ -117,6 +119,14 @@
 			}
 		},
 		methods: {
+			requireLogin(){
+				if(!localStorage.getItem('frontToken') || !localStorage.getItem('frontUserid')) {
+					this.$message.warning('请先登录后再操作');
+					this.$router.push('/login');
+					return false;
+				}
+				return true;
+			},
 			backClick() {
 				if(this.storeupType){
 					history.back()
@@ -187,6 +197,10 @@
 				})
 			},
 			getZan() {
+				if(!localStorage.getItem('frontToken')) {
+					this.zanType = false;
+					return;
+				}
 				this.$http.get('storeup/list', {
 					params: {
 						page: 1,
@@ -208,6 +222,10 @@
 				})
 			},
 			getCollect(){
+				if(!localStorage.getItem('frontToken')) {
+					this.collectType = false;
+					return;
+				}
 				this.$http.get('storeup/list', {
 					params: {
 						page: 1,
@@ -229,6 +247,10 @@
 				})
 			},
 			zanClick() {
+				if(!this.requireLogin() || this.zanLoading) {
+					return;
+				}
+				this.zanLoading = true;
 				if(this.zanType){
 					this.$http.post('storeup/delete', [this.zanForm.id]).then(res => {
 						if (res.data && res.data.code == 0) {
@@ -236,7 +258,12 @@
 							this.detail.thumbsupnum--
 							this.$http.post('news/update',this.detail).then(obj=>{})
 							this.getZan()
+						} else {
+							this.$message.error(res.data.msg || '操作失败')
 						}
+						this.zanLoading = false
+					}, () => {
+						this.zanLoading = false
 					})
 				}else{
 					let data = {
@@ -253,11 +280,20 @@
 							this.detail.thumbsupnum++
 							this.$http.post('news/update',this.detail).then(obj=>{})
 							this.getZan()
+						} else {
+							this.$message.error(res.data.msg || '操作失败')
 						}
+						this.zanLoading = false
+					}, () => {
+						this.zanLoading = false
 					})
 				}
 			},
 			collectClick(){
+				if(!this.requireLogin() || this.collectLoading) {
+					return;
+				}
+				this.collectLoading = true;
 				if(this.collectType){
 					this.$http.post('storeup/delete', [this.collectForm.id]).then(res => {
 						if (res.data && res.data.code == 0) {
@@ -266,6 +302,9 @@
 							this.$http.post('news/update',this.detail).then(obj=>{})
 							this.getCollect()
 						}
+						this.collectLoading = false
+					}, () => {
+						this.collectLoading = false
 					})
 				}else{
 					let data = {
@@ -282,7 +321,12 @@
 							this.$http.post('news/update',this.detail).then(obj=>{})
 							this.$message.success('收藏成功')
 							this.getCollect()
+						} else {
+							this.$message.error(res.data.msg || '操作失败')
 						}
+						this.collectLoading = false
+					}, () => {
+						this.collectLoading = false
 					})
 				}
 			},

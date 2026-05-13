@@ -203,6 +203,9 @@
 
 			this.init();
 			this.sessionForm = JSON.parse(localStorage.getItem('sessionForm'))
+			const filePath = this.normalizeFilePath(this.sessionForm.touxiang || this.sessionForm.avatar)
+			this.$set(this.sessionForm, 'touxiang', filePath)
+			this.$set(this.sessionForm, 'avatar', filePath)
 		},
 		//方法集合
 		methods: {
@@ -214,15 +217,48 @@
 			setSession(){
 				localStorage.setItem('sessionForm',JSON.stringify(this.sessionForm))
 			},
-			onSubmit(formName) {
-				if(`yonghu` == this.userTableName && this.sessionForm.touxiang!=null){
-					this.sessionForm.touxiang = this.sessionForm.touxiang.replace(new RegExp(this.$config.baseUrl,"g"),"");
+			normalizeFilePath(path) {
+				if (!path) {
+					return ''
 				}
+				let filePath = String(path).split(',')[0].split('?')[0].trim()
+				const bu = this.$config.baseUrl || '';
+				if (bu && filePath.indexOf(bu) === 0) {
+					filePath = filePath.replace(bu, '')
+				}
+				const appName = (this.$config.name || '').replace(/^\//, '').replace(/\/$/, '')
+				if (appName && filePath.indexOf('/' + appName + '/') === 0) {
+					filePath = filePath.replace('/' + appName + '/', '')
+				}
+				if (appName && filePath.indexOf(appName + '/') === 0) {
+					filePath = filePath.replace(appName + '/', '')
+				}
+				if (filePath.indexOf('/upload/') === 0) {
+					filePath = filePath.substring(1)
+				}
+				return filePath
+			},
+			syncAvatarCache() {
+				const filePath = this.normalizeFilePath(this.sessionForm.touxiang || this.sessionForm.avatar)
+				if (filePath) {
+					this.$set(this.sessionForm, 'touxiang', filePath)
+					this.$set(this.sessionForm, 'avatar', filePath)
+					localStorage.setItem('frontHeadportrait', filePath)
+				} else {
+					localStorage.removeItem('frontHeadportrait')
+				}
+				this.setSession()
+			},
+			onSubmit(formName) {
+				const filePath = this.normalizeFilePath(this.sessionForm.touxiang || this.sessionForm.avatar)
+				this.$set(this.sessionForm, 'touxiang', filePath)
+				this.$set(this.sessionForm, 'avatar', filePath)
 				this.$refs[formName].validate((valid) => {
 					if (valid) {
 						this.$http.post(this.userTableName + '/update', this.sessionForm).then(res => {
 							if (res.data.code == 0) {
-								this.setSession()
+								this.syncAvatarCache();
+								window.dispatchEvent(new Event('house-front-session-refresh'));
 								this.$message({
 									message: '更新成功',
 									type: 'success',
@@ -236,7 +272,9 @@
 				});
 			},
 			yonghutouxiangHandleAvatarSuccess(fileUrls) {
-				this.sessionForm.touxiang = fileUrls;
+				const filePath = this.normalizeFilePath(fileUrls)
+				this.$set(this.sessionForm, 'touxiang', filePath);
+				this.$set(this.sessionForm, 'avatar', filePath);
 			},
 			handleClick(tab, event) {
 				switch(event.target.outerText) {

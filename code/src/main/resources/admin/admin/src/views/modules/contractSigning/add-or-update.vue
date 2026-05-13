@@ -84,7 +84,7 @@
 					<el-input v-model="ruleForm.yixiangdingjin" placeholder="意向定金" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'" label="尾款金额" prop="remainingAmount" >
-					<el-input v-model="remainingAmount" placeholder="尾款金额" readonly></el-input>
+					<el-input :value="weikuanjine" placeholder="尾款金额" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-else-if="ruleForm.weikuanjine" label="尾款金额" prop="remainingAmount" >
 					<el-input v-model="ruleForm.weikuanjine" placeholder="尾款金额" readonly></el-input>

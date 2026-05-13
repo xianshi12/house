@@ -463,6 +463,8 @@
 						type: "success",
 						duration: 1500,
 						onClose: () => {
+							this.searchForm.sfsh = '';
+							this.searchForm.ispay = '';
 							this.getDataList()
 						}
 					});
@@ -732,6 +734,7 @@
 										type: "success",
 										duration: 1500,
 										onClose: () => {
+											this.searchForm.sfsh = '';
 											this.getDataList();
 											this.sfshBatchVisiable = false
 											this.batchIds = []

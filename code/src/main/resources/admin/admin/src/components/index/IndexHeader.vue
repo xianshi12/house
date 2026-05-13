@@ -5,7 +5,7 @@
 		</div>
 		<el-dropdown class="dropdown-box" @command="handleCommand" trigger="click">
 			<div class="el-dropdown-link">
-				<el-image v-if="avatar" :src="avatar?this.$base.url + avatar : require('@/assets/img/avator.png')" fit="cover"></el-image>
+				<el-image v-if="avatar" :src="avatarSrc" fit="cover"></el-image>
 				<span class="label">欢迎您，</span>
 				<span class="nickname">{{this.$storage.get('adminName')}}</span>
 				<span class="icon iconfont icon-xiala"></span>
@@ -51,10 +51,39 @@
 			avatar(){
 				return this.$storage.get('headportrait')?this.$storage.get('headportrait'):''
 			},
+			avatarSrc(){
+				return this.getFileUrl(this.avatar) || require('@/assets/img/avator.png')
+			},
 		},
 		mounted() {
 		},
 		methods: {
+			normalizeFilePath(path) {
+				if (!path) {
+					return ''
+				}
+				let filePath = String(path).split(',')[0].split('?')[0].trim()
+				if (filePath.indexOf(this.$base.url) === 0) {
+					filePath = filePath.replace(this.$base.url, '')
+				}
+				if (filePath.indexOf('/' + this.$base.name + '/') === 0) {
+					filePath = filePath.replace('/' + this.$base.name + '/', '')
+				}
+				if (filePath.indexOf(this.$base.name + '/') === 0) {
+					filePath = filePath.replace(this.$base.name + '/', '')
+				}
+				if (filePath.indexOf('/upload/') === 0) {
+					filePath = filePath.substring(1)
+				}
+				return filePath
+			},
+			getFileUrl(path) {
+				const filePath = this.normalizeFilePath(path)
+				if (!filePath || filePath.substr(0, 4) == 'http') {
+					return filePath
+				}
+				return this.$base.url + filePath
+			},
 			handleCommand(name) {
 				if (name == 'logout') {
 					this.onLogout()

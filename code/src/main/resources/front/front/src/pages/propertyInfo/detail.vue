@@ -129,8 +129,7 @@
 								<span class="icon iconfont icon-jiantou24"></span>
 							</div>
 							<div class="user">
-								<el-image v-if="item.avatarurl" :size="50" :src="baseUrl + item.avatarurl"></el-image>
-								<el-image v-if="!item.avatarurl" :size="50" :src="require('@/assets/touxiang.png')"></el-image>
+								<el-image class="comment-avatar" :src="avatarSrc(item)"></el-image>
 								<div class="name">{{item.nickname}}</div>
 							</div>
 							<div class="comment-content-box">
@@ -153,8 +152,15 @@
 									<el-button class="delBtn" v-if="showIndex==item.id&&userid==item.userid" @click="discussDel(item.id)">删除</el-button>
 								</div>
 							</div>
-							<div class="comment-content-box" v-if="item.reply">
-								回复：<span class="ql-snow ql-editor" v-html="item.reply"></span>
+							<div class="reply-content-box" v-if="item.reply">
+								<div class="reply-user">
+									<el-image class="comment-avatar" :src="replyAvatarSrc(item)"></el-image>
+									<div>
+										<div class="name">{{item.replyNickname || item.replyRole || '管理员'}}</div>
+										<div class="role">{{item.replyRole || '回复'}}</div>
+									</div>
+								</div>
+								<div class="ql-snow ql-editor reply-text" v-html="item.reply"></div>
 							</div>
 						</div>
 					</div>
@@ -235,6 +241,7 @@
 				},
 				isStoreup: false,
 				storeupInfo: {},
+				storeupLoading: false,
 				buynumber: 1,
 				centerType: false,
 				storeupType: false,
@@ -296,6 +303,15 @@
 				this.$router.push({path: '/index/' + acrossTable + 'Add', query: {type: 'cross'}});
 			},
 			storeup(type) {
+				if(!localStorage.getItem('frontToken') || !localStorage.getItem('frontUserid')) {
+					this.$message.warning('请先登录后再收藏');
+					this.$router.push('/login');
+					return;
+				}
+				if(this.storeupLoading) {
+					return;
+				}
+				this.storeupLoading = true;
 				if (type == 1 && !this.isStoreup) {
 					this.storeupParams.name = this.title;
 					this.storeupParams.picture = this.detailBanner[0];
@@ -311,7 +327,12 @@
 								message: '收藏成功!',
 								duration: 1500,
 							});
+						} else {
+							this.$message.error(res.data.msg || '收藏失败');
 						}
+						this.storeupLoading = false;
+					}, () => {
+						this.storeupLoading = false;
 					});
 				}
 				if (type == -1 && this.isStoreup) {
@@ -331,9 +352,16 @@
 										message: '取消成功!',
 										duration: 1500,
 									});
+								} else {
+									this.$message.error(res.data.msg || '取消失败');
 								}
+								this.storeupLoading = false;
 							});
+						} else {
+							this.storeupLoading = false;
 						}
+					}, () => {
+						this.storeupLoading = false;
 					});
 				}
 			},
@@ -456,6 +484,22 @@
 						this.totalPage = res.data.data.totalPage;
 					}
 				});
+			},
+			fileSrc(path) {
+				if(!path) {
+					return require('@/assets/touxiang.png');
+				}
+				let value = String(path).split(',')[0];
+				if(value.substr(0,4) == 'http') {
+					return value;
+				}
+				return this.baseUrl + value.replace(/^\/+/, '');
+			},
+			avatarSrc(item) {
+				return this.fileSrc(item.avatarurl || item.avatarUrl);
+			},
+			replyAvatarSrc(item) {
+				return this.fileSrc(item.replyAvatarurl || item.replyAvatarUrl);
 			},
 			comzanChange(row){
 				if(row.tuserids){
@@ -1076,6 +1120,9 @@
 							width: 40px;
 							height: 40px;
 						}
+						.comment-avatar {
+							flex: 0 0 40px;
+						}
 						.name {
 							color: #333;
 							font-size: 16px;
@@ -1207,6 +1254,40 @@
 								min-width: 80px;
 								height: 36px;
 							}
+						}
+					}
+					.reply-content-box {
+						border-radius: 4px;
+						padding: 10px;
+						margin: 12px 8px 8px;
+						background: #f7f9fc;
+						border-left: 3px solid #0066D4;
+						.reply-user {
+							display: flex;
+							align-items: center;
+							margin-bottom: 8px;
+							.comment-avatar {
+								border-radius: 100%;
+								margin: 0 10px 0 0;
+								width: 40px;
+								height: 40px;
+								flex: 0 0 40px;
+							}
+							.name {
+								color: #333;
+								font-size: 15px;
+								line-height: 20px;
+							}
+							.role {
+								color: #888;
+								font-size: 13px;
+								line-height: 18px;
+							}
+						}
+						.reply-text {
+							padding: 0;
+							color: #475a83;
+							line-height: 1.6;
 						}
 					}
 				}

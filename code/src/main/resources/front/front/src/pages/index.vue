@@ -11,7 +11,7 @@
 
 				<el-dropdown class="dropdown-box" @command="handleCommand" trigger="click">
 					<div class="el-dropdown-link" v-show="Token">
-						<img class="top_avatar2" v-show="headportrait&&Token" :src="headportrait?baseUrl + headportrait:require('@/assets/avator.png')">
+						<img class="top_avatar2" v-show="headportrait&&Token" :src="avatarSrc">
 						<span class="top_label2"></span>
 						<span class="top_nickname2">{{username}}</span>
 						<span class="icon iconfont icon-xiala"></span>
@@ -174,7 +174,12 @@ export default {
 	},
 	mounted() {
 		this.activeIndex = localStorage.getItem('keyPath') || '0';
-
+		this._houseSessionRefresh = () => {
+			if (localStorage.getItem('frontToken')) {
+				this.getSession();
+			}
+		};
+		window.addEventListener('house-front-session-refresh', this._houseSessionRefresh);
 
 		// banner
 		setTimeout(()=>{
@@ -182,7 +187,15 @@ export default {
 		}, 500)
 
 	},
+	beforeDestroy() {
+		if (this._houseSessionRefresh) {
+			window.removeEventListener('house-front-session-refresh', this._houseSessionRefresh);
+		}
+	},
 	computed: {
+		avatarSrc() {
+			return this.getFileUrl(this.headportrait) || require('@/assets/avator.png')
+		},
 		activeMenu() {
 			const route = this.$route
 			const {
@@ -226,6 +239,45 @@ export default {
 		preHttp(str) {
 			return str && str.substr(0,4)=='http';
 		},
+		normalizeFilePath(path) {
+			if (!path) {
+				return ''
+			}
+			let filePath = String(path).split(',')[0].split('?')[0].trim()
+			if (this.baseUrl && filePath.indexOf(this.baseUrl) === 0) {
+				filePath = filePath.replace(this.baseUrl, '')
+			}
+			const appName = (this.$config.name || '').replace(/^\//, '').replace(/\/$/, '')
+			if (appName && filePath.indexOf('/' + appName + '/') === 0) {
+				filePath = filePath.replace('/' + appName + '/', '')
+			}
+			if (appName && filePath.indexOf(appName + '/') === 0) {
+				filePath = filePath.replace(appName + '/', '')
+			}
+			if (filePath.indexOf('/upload/') === 0) {
+				filePath = filePath.substring(1)
+			}
+			return filePath
+		},
+		getFileUrl(path) {
+			if (!path) {
+				return ''
+			}
+			let filePath = this.normalizeFilePath(path)
+			if (this.preHttp(filePath)) {
+				return filePath
+			}
+			return this.baseUrl + filePath
+		},
+		setHeadportrait(path) {
+			const filePath = this.normalizeFilePath(path)
+			this.headportrait = filePath
+			if (filePath) {
+				localStorage.setItem('frontHeadportrait', filePath);
+			} else {
+				localStorage.removeItem('frontHeadportrait');
+			}
+		},
 
 		async getSession() {
 			await this.$http.get(`${localStorage.getItem('UserTableName')}/session`, {emulateJSON: true}).then(async res => {
@@ -241,13 +293,7 @@ export default {
 					if(res.data.data.vip) {
 						localStorage.setItem('vip', res.data.data.vip);
 					}
-					if(res.data.data.touxiang) {
-						this.headportrait = res.data.data.touxiang
-						localStorage.setItem('frontHeadportrait', res.data.data.touxiang);
-					} else if(res.data.data.headportrait) {
-						this.headportrait = res.data.data.headportrait
-						localStorage.setItem('frontHeadportrait', res.data.data.headportrait);
-					}
+					this.setHeadportrait(res.data.data.touxiang || res.data.data.avatar || res.data.data.headportrait);
 				}
 			});
 		},

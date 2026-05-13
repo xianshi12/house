@@ -116,6 +116,15 @@ public class PropertyCommentEntity<T> implements Serializable {
 	 */
 					
 	private String cuserids;
+
+	@TableField(exist = false)
+	private String replyAvatarurl;
+
+	@TableField(exist = false)
+	private String replyNickname;
+
+	@TableField(exist = false)
+	private String replyRole;
 	
 	
 	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
@@ -170,6 +179,12 @@ public class PropertyCommentEntity<T> implements Serializable {
 	 * 获取：头像
 	 */
 	public String getAvatarUrl() {
+		return avatarUrl;
+	}
+	public void setAvatarurl(String avatarurl) {
+		this.avatarUrl = avatarurl;
+	}
+	public String getAvatarurl() {
 		return avatarUrl;
 	}
 	/**
@@ -267,6 +282,25 @@ public class PropertyCommentEntity<T> implements Serializable {
 	 */
 	public String getCuserids() {
 		return cuserids;
+	}
+
+	public String getReplyAvatarurl() {
+		return replyAvatarurl;
+	}
+	public void setReplyAvatarurl(String replyAvatarurl) {
+		this.replyAvatarurl = replyAvatarurl;
+	}
+	public String getReplyNickname() {
+		return replyNickname;
+	}
+	public void setReplyNickname(String replyNickname) {
+		this.replyNickname = replyNickname;
+	}
+	public String getReplyRole() {
+		return replyRole;
+	}
+	public void setReplyRole(String replyRole) {
+		this.replyRole = replyRole;
 	}
 
 }

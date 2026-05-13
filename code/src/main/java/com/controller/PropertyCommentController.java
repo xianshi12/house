@@ -25,14 +25,20 @@ import com.annotation.IgnoreAuth;
 
 import com.entity.PropertyCommentEntity;
 import com.entity.view.PropertyCommentView;
+import com.entity.UserEntity;
 
+import com.service.DeveloperService;
+import com.service.PropertyInfoService;
 import com.service.PropertyCommentService;
 import com.service.TokenService;
+import com.service.UserService;
+import com.service.UsersService;
 import com.utils.PageUtils;
 import com.utils.R;
 import com.utils.MPUtil;
 import com.utils.MapUtils;
 import com.utils.CommonUtil;
+import com.utils.PropertyCommentDisplayUtils;
 import java.io.IOException;
 
 /**
@@ -47,6 +53,14 @@ import java.io.IOException;
 public class PropertyCommentController {
     @Autowired
     private PropertyCommentService propertyCommentService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PropertyInfoService propertyInfoService;
+    @Autowired
+    private DeveloperService developerService;
+    @Autowired
+    private UsersService usersService;
 
 
 
@@ -69,6 +83,7 @@ public class PropertyCommentController {
 
         //查询结果
 		PageUtils page = propertyCommentService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, propertyComment), params), params));
+        PropertyCommentDisplayUtils.fillPage(page, userService, propertyInfoService, developerService, usersService);
         Map<String, String> deSens = new HashMap<>();
         //给需要脱敏的字段脱敏
         DeSensUtil.desensitize(page,deSens);
@@ -87,6 +102,7 @@ public class PropertyCommentController {
 
         //查询结果
 		PageUtils page = propertyCommentService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, propertyComment), params), params));
+        PropertyCommentDisplayUtils.fillPage(page, userService, propertyInfoService, developerService, usersService);
         Map<String, String> deSens = new HashMap<>();
         //给需要脱敏的字段脱敏
         DeSensUtil.desensitize(page,deSens);
@@ -102,7 +118,7 @@ public class PropertyCommentController {
     public R list( PropertyCommentEntity propertyComment){
        	EntityWrapper<PropertyCommentEntity> ew = new EntityWrapper<PropertyCommentEntity>();
       	ew.allEq(MPUtil.allEQMapPre( propertyComment, "property_comment")); 
-        return R.ok().put("data", propertyCommentService.selectListView(ew));
+        return R.ok().put("data", PropertyCommentDisplayUtils.fillList(propertyCommentService.selectListView(ew), userService, propertyInfoService, developerService, usersService));
     }
 
 	 /**
@@ -111,8 +127,9 @@ public class PropertyCommentController {
     @RequestMapping("/query")
     public R query(PropertyCommentEntity propertyComment){
         EntityWrapper< PropertyCommentEntity> ew = new EntityWrapper< PropertyCommentEntity>();
- 		ew.allEq(MPUtil.allEQMapPre( propertyComment, "property_comment")); 
+		ew.allEq(MPUtil.allEQMapPre( propertyComment, "property_comment")); 
 		PropertyCommentView propertyCommentView =  propertyCommentService.selectView(ew);
+		PropertyCommentDisplayUtils.fill(propertyCommentView, userService, propertyInfoService, developerService, usersService);
 		return R.ok("查询房源信息评论表成功").put("data", propertyCommentView);
     }
 	
@@ -122,6 +139,7 @@ public class PropertyCommentController {
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
         PropertyCommentEntity propertyComment = propertyCommentService.selectById(id);
+        PropertyCommentDisplayUtils.fill(propertyComment, userService, propertyInfoService, developerService, usersService);
         Map<String, String> deSens = new HashMap<>();
         //给需要脱敏的字段脱敏
         DeSensUtil.desensitize(propertyComment,deSens);
@@ -135,6 +153,7 @@ public class PropertyCommentController {
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
         PropertyCommentEntity propertyComment = propertyCommentService.selectById(id);
+        PropertyCommentDisplayUtils.fill(propertyComment, userService, propertyInfoService, developerService, usersService);
         Map<String, String> deSens = new HashMap<>();
         //给需要脱敏的字段脱敏
         DeSensUtil.desensitize(propertyComment,deSens);
@@ -150,6 +169,7 @@ public class PropertyCommentController {
     @RequestMapping("/save")
     public R save(@RequestBody PropertyCommentEntity propertyComment, HttpServletRequest request){
         //ValidatorUtils.validateEntity(propertyComment);
+        fillCurrentCommentUser(propertyComment, request);
         propertyCommentService.insert(propertyComment);
         return R.ok().put("data",propertyComment.getId());
     }
@@ -160,6 +180,7 @@ public class PropertyCommentController {
     @RequestMapping("/add")
     public R add(@RequestBody PropertyCommentEntity propertyComment, HttpServletRequest request){
         //ValidatorUtils.validateEntity(propertyComment);
+        fillCurrentCommentUser(propertyComment, request);
         propertyCommentService.insert(propertyComment);
         return R.ok().put("data",propertyComment.getId());
     }
@@ -188,6 +209,27 @@ public class PropertyCommentController {
         //全部更新
         propertyCommentService.updateById(propertyComment);
         return R.ok();
+    }
+
+    private void fillCurrentCommentUser(PropertyCommentEntity propertyComment, HttpServletRequest request) {
+        Object userIdObj = request.getSession().getAttribute("userId");
+        if (!(userIdObj instanceof Long)) {
+            return;
+        }
+        Long userId = (Long) userIdObj;
+        propertyComment.setUserid(userId);
+        UserEntity user = userService.selectById(userId);
+        if (user == null) {
+            return;
+        }
+        if (StringUtils.isNotBlank(user.getAvatar())) {
+            propertyComment.setAvatarurl(user.getAvatar());
+        }
+        if (StringUtils.isNotBlank(user.getFullName())) {
+            propertyComment.setNickname(user.getFullName());
+        } else if (StringUtils.isNotBlank(user.getAccount())) {
+            propertyComment.setNickname(user.getAccount());
+        }
     }
 
 

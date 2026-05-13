@@ -516,6 +516,7 @@
 										type: "success",
 										duration: 1500,
 										onClose: () => {
+											this.searchForm.sfsh = '';
 											this.getDataList();
 											this.sfshBatchVisiable = false
 											this.batchIds = []
