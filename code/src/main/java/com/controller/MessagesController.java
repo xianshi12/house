@@ -63,8 +63,8 @@ public class MessagesController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,MessagesEntity messages,
 		HttpServletRequest request){
-        if(!request.getSession().getAttribute("role").toString().equals("管理员")) {
-            messages.setUserid((Long)request.getSession().getAttribute("userId"));
+        if(!request.getAttribute("role").toString().equals("管理员")) {
+            messages.setUserid((Long)request.getAttribute("userId"));
         }
         //设置查询条件
         EntityWrapper<MessagesEntity> ew = new EntityWrapper<MessagesEntity>();

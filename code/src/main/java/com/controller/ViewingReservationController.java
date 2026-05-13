@@ -64,12 +64,12 @@ public class ViewingReservationController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,ViewingReservationEntity kanfangyuyue,
 		HttpServletRequest request){
-		String tableName = request.getSession().getAttribute("tableName").toString();
+		String tableName = request.getAttribute("tableName").toString();
 		if(tableName.equals("developer")) {
-			kanfangyuyue.setDeveloperCode((String)request.getSession().getAttribute("username"));
+			kanfangyuyue.setDeveloperCode((String)request.getAttribute("username"));
 		}
 		if(tableName.equals("user")) {
-			kanfangyuyue.setAccount((String)request.getSession().getAttribute("username"));
+			kanfangyuyue.setAccount((String)request.getAttribute("username"));
 		}
         //设置查询条件
         EntityWrapper<ViewingReservationEntity> ew = new EntityWrapper<ViewingReservationEntity>();
@@ -239,12 +239,12 @@ public class ViewingReservationController {
         params.put("xColumn", AliasUtils.column(xColumnName));
         params.put("yColumn", AliasUtils.column(yColumnName));
         EntityWrapper<ViewingReservationEntity> ew = new EntityWrapper<ViewingReservationEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
                                         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
                         if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
                                     //获取结果
         List<Map<String, Object>> result = viewingReservationService.selectValue(params, ew);
@@ -291,12 +291,12 @@ public class ViewingReservationController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         //构建查询统计条件
         EntityWrapper<ViewingReservationEntity> ew = new EntityWrapper<ViewingReservationEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
         for(int i=0;i<yColumnNames.length;i++) {
             params.put("yColumn", AliasUtils.column(yColumnNames[i]));
@@ -330,12 +330,12 @@ public class ViewingReservationController {
         params.put("timeStatType", timeStatType);
         //构建查询统计条件
         EntityWrapper<ViewingReservationEntity> ew = new EntityWrapper<ViewingReservationEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
         List<Map<String, Object>> result = viewingReservationService.selectTimeStatValue(params, ew);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -369,12 +369,12 @@ public class ViewingReservationController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         //构建查询统计条件
         EntityWrapper<ViewingReservationEntity> ew = new EntityWrapper<ViewingReservationEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
         for(int i=0;i<yColumnNames.length;i++) {
             params.put("yColumn", AliasUtils.column(yColumnNames[i]));
@@ -406,12 +406,12 @@ public class ViewingReservationController {
         params.put("column", AliasUtils.column(columnName));
         //构建查询统计条件
         EntityWrapper<ViewingReservationEntity> ew = new EntityWrapper<ViewingReservationEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
         List<Map<String, Object>> result = viewingReservationService.selectGroup(params, ew);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -434,12 +434,12 @@ public class ViewingReservationController {
      */
     @RequestMapping("/count")
     public R count(@RequestParam Map<String, Object> params,ViewingReservationEntity kanfangyuyue, HttpServletRequest request){
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            kanfangyuyue.setDeveloperCode((String)request.getSession().getAttribute("username"));
+            kanfangyuyue.setDeveloperCode((String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            kanfangyuyue.setAccount((String)request.getSession().getAttribute("username"));
+            kanfangyuyue.setAccount((String)request.getAttribute("username"));
         }
         EntityWrapper<ViewingReservationEntity> ew = new EntityWrapper<ViewingReservationEntity>();
         int count = viewingReservationService.selectCount(MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, kanfangyuyue), params), params));

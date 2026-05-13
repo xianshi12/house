@@ -63,12 +63,12 @@ public class IntentDepositPaymentController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,IntentDepositPaymentEntity yixiangjinzhifu,
 		HttpServletRequest request){
-		String tableName = request.getSession().getAttribute("tableName").toString();
+		String tableName = request.getAttribute("tableName").toString();
 		if(tableName.equals("developer")) {
-			yixiangjinzhifu.setDeveloperCode((String)request.getSession().getAttribute("username"));
+			yixiangjinzhifu.setDeveloperCode((String)request.getAttribute("username"));
 		}
 		if(tableName.equals("user")) {
-			yixiangjinzhifu.setAccount((String)request.getSession().getAttribute("username"));
+			yixiangjinzhifu.setAccount((String)request.getAttribute("username"));
 		}
         //设置查询条件
         EntityWrapper<IntentDepositPaymentEntity> ew = new EntityWrapper<IntentDepositPaymentEntity>();

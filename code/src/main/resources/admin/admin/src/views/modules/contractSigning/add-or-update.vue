@@ -138,24 +138,13 @@
 				<el-form-item class="input" v-else-if="ruleForm.dengjishijian" label="登记时间" prop="registerTime" >
 					<el-input v-model="ruleForm.dengjishijian" placeholder="登记时间" readonly></el-input>
 				</el-form-item>
-				<el-form-item class="upload" v-if="type!='info'&& !ro.hetong" label="合同" prop="contract" >
-					<file-upload
-						tip="点击上传合同"
-						action="file/upload"
-						:limit="1"
-						:type="3"
-						:multiple="true"
-						:fileUrls="ruleForm.hetong?ruleForm.hetong:''"
-						@change="hetongUploadChange"
-					></file-upload>
-				</el-form-item>  
-				<el-form-item v-else-if="ruleForm.hetong" label="合同" prop="contract" >
+				<el-form-item v-if="ruleForm.hetong" label="合同" prop="contract" >
 					<el-button class="downBtn" type="text" size="small" @click="download($base.url+ruleForm.hetong)">
 						<span class="icon iconfont icon-xiazai6"></span>
 						下载
 					</el-button>
 				</el-form-item>
-				<el-form-item v-else-if="!ruleForm.hetong" label="合同" prop="contract" >
+				<el-form-item v-else label="合同" prop="contract" >
 					<el-button class="unBtn" type="text" size="small">
 						<span class="icon iconfont icon-xihuan"></span>
 						暂无
@@ -346,7 +335,6 @@
 					dengjishijian: [
 					],
 					hetong: [
-						{ required: true, message: '合同不能为空', trigger: 'blur' },
 					],
 					sfsh: [
 					],
@@ -377,6 +365,27 @@
 			// 下载
 			download(file){
 				window.open(`${file}`)
+			},
+			fetchOriginalContract() {
+				if (this.ruleForm.hetong || !this.ruleForm.fangwumingcheng) {
+					return;
+				}
+				this.$http({
+					url: 'fangyuanxinxi/list',
+					method: 'get',
+					params: {
+						page: 1,
+						limit: 1,
+						propertyName: this.ruleForm.fangwumingcheng,
+						developerCode: this.ruleForm.kaifashanghao,
+						salePrice: this.ruleForm.chushoujiage
+					}
+				}).then(({ data }) => {
+					if (data && data.code === 0 && data.data && data.data.list && data.data.list.length) {
+						this.ruleForm.hetong = data.data.list[0].chushouhetong || data.data.list[0].saleContract || '';
+						this.ro.hetong = !!this.ruleForm.hetong;
+					}
+				});
 			},
 			// 初始化
 			init(id,type) {
@@ -495,7 +504,13 @@
 							this.ro.hetong = true;
 							continue;
 						}
+						if(o=='saleContract' || o=='chushouhetong'){
+							this.ruleForm.hetong = obj[o];
+							this.ro.hetong = true;
+							continue;
+						}
 					}
+					this.fetchOriginalContract();
 				}
 				// 获取用户信息
 				this.$http({

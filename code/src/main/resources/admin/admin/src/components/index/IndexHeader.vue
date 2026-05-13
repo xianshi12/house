@@ -108,6 +108,7 @@
 			},
 			onIndexTap(){
 				localStorage.setItem("frontToken", localStorage.getItem("Token"));
+				localStorage.setItem("frontRefreshToken", localStorage.getItem("RefreshToken"));
 				localStorage.setItem("frontRole", localStorage.getItem("role"));
 				localStorage.setItem("frontSessionTable", localStorage.getItem("sessionTable"));
 				localStorage.setItem("frontHeadportrait", localStorage.getItem("headportrait"));

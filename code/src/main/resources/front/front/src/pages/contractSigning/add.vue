@@ -98,15 +98,10 @@
 				</el-date-picker> 
 			</el-form-item>
 			<el-form-item class="add-item" label="合同" prop="contract">
-				<file-upload
-					tip="点击上传合同"
-					action="file/upload"
-					:limit="1"
-					:type="3"
-					:multiple="true"
-					:fileUrls="ruleForm.hetong?ruleForm.hetong:''"
-					@change="hetongUploadChange"
-					></file-upload>
+				<template v-if="ruleForm.hetong">
+					<el-button class="uploadBtn" @click="download(contractFileUrl(ruleForm.hetong))">查看合同</el-button>
+				</template>
+				<div class="text" v-else>暂无合同</div>
 			</el-form-item>
 			<el-form-item class="add-item" label="签署合同" prop="userContract">
 				<file-upload
@@ -244,9 +239,9 @@
 					dengjishijian: [
 					],
 					hetong: [
-						{ required: true, message: '合同不能为空', trigger: 'blur' },
 					],
 						yonghuhetong: [
+						{ required: true, message: '请上传签署后的合同', trigger: 'change' },
 						],
 										sfsh: [
 					],
@@ -287,6 +282,31 @@
 			// 下载
 			download(file){
 				window.open(`${file}`)
+			},
+			contractFileUrl(file) {
+				if (!file) {
+					return '';
+				}
+				return file.substr(0, 4) == 'http' ? file : this.baseUrl + file;
+			},
+			fetchOriginalContract() {
+				if (this.ruleForm.hetong || !this.ruleForm.fangwumingcheng) {
+					return;
+				}
+				this.$http.get('fangyuanxinxi/list', {
+					params: {
+						page: 1,
+						limit: 1,
+						propertyName: this.ruleForm.fangwumingcheng,
+						developerCode: this.ruleForm.kaifashanghao,
+						salePrice: this.ruleForm.chushoujiage
+					}
+				}).then(res => {
+					if (res.data.code == 0 && res.data.data && res.data.data.list && res.data.data.list.length) {
+						this.ruleForm.hetong = res.data.data.list[0].chushouhetong || res.data.data.list[0].saleContract || '';
+						this.ro.hetong = !!this.ruleForm.hetong;
+					}
+				});
 			},
 			// 初始化
 			init(type) {
@@ -394,7 +414,13 @@
 							this.ro.hetong = true;
 							continue;
 						}
+						if(o=='saleContract' || o=='chushouhetong'){
+							this.ruleForm.hetong = obj[o];
+							this.ro.hetong = true;
+							continue;
+						}
 					}
+					this.fetchOriginalContract();
 				}else if(type=='edit'){
 					this.info()
 				}

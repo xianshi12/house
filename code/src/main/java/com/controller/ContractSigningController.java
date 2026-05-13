@@ -24,9 +24,11 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.ContractSigningEntity;
+import com.entity.PropertyInfoEntity;
 import com.entity.view.ContractSigningView;
 
 import com.service.ContractSigningService;
+import com.service.PropertyInfoService;
 import com.service.TokenService;
 import com.utils.PageUtils;
 import com.utils.R;
@@ -49,6 +51,9 @@ public class ContractSigningController {
     @Autowired
     private ContractSigningService contractSigningService;
 
+    @Autowired
+    private PropertyInfoService propertyInfoService;
+
 
 
 
@@ -64,12 +69,12 @@ public class ContractSigningController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,ContractSigningEntity hetongqianding,
 		HttpServletRequest request){
-		String tableName = request.getSession().getAttribute("tableName").toString();
+		String tableName = request.getAttribute("tableName").toString();
 		if(tableName.equals("developer")) {
-			hetongqianding.setDeveloperCode((String)request.getSession().getAttribute("username"));
+			hetongqianding.setDeveloperCode((String)request.getAttribute("username"));
 		}
 		if(tableName.equals("user")) {
-			hetongqianding.setAccount((String)request.getSession().getAttribute("username"));
+			hetongqianding.setAccount((String)request.getAttribute("username"));
 		}
         //设置查询条件
         EntityWrapper<ContractSigningEntity> ew = new EntityWrapper<ContractSigningEntity>();
@@ -158,6 +163,7 @@ public class ContractSigningController {
     @RequestMapping("/save")
     public R save(@RequestBody ContractSigningEntity hetongqianding, HttpServletRequest request){
         //ValidatorUtils.validateEntity(hetongqianding);
+        fillOriginalContract(hetongqianding);
         contractSigningService.insert(hetongqianding);
         return R.ok().put("data",hetongqianding.getId());
     }
@@ -168,6 +174,7 @@ public class ContractSigningController {
     @RequestMapping("/add")
     public R add(@RequestBody ContractSigningEntity hetongqianding, HttpServletRequest request){
         //ValidatorUtils.validateEntity(hetongqianding);
+        fillOriginalContract(hetongqianding);
         contractSigningService.insert(hetongqianding);
         return R.ok().put("data",hetongqianding.getId());
     }
@@ -191,6 +198,26 @@ public class ContractSigningController {
     /**
      * 审核
      */
+    private void fillOriginalContract(ContractSigningEntity hetongqianding) {
+        if (hetongqianding == null || StringUtils.isNotBlank(hetongqianding.getContract())) {
+            return;
+        }
+        EntityWrapper<PropertyInfoEntity> ew = new EntityWrapper<PropertyInfoEntity>();
+        if (StringUtils.isNotBlank(hetongqianding.getPropertyName())) {
+            ew.eq("property_name", hetongqianding.getPropertyName());
+        }
+        if (StringUtils.isNotBlank(hetongqianding.getDeveloperCode())) {
+            ew.eq("developer_code", hetongqianding.getDeveloperCode());
+        }
+        if (hetongqianding.getSalePrice() != null) {
+            ew.eq("sale_price", hetongqianding.getSalePrice());
+        }
+        PropertyInfoEntity propertyInfo = propertyInfoService.selectOne(ew);
+        if (propertyInfo != null && StringUtils.isNotBlank(propertyInfo.getSaleContract())) {
+            hetongqianding.setContract(propertyInfo.getSaleContract());
+        }
+    }
+
     @RequestMapping("/shBatch")
     @Transactional
     public R update(@RequestBody Long[] ids, @RequestParam String sfsh, @RequestParam String shhf){
@@ -239,12 +266,12 @@ public class ContractSigningController {
         params.put("xColumn", AliasUtils.column(xColumnName));
         params.put("yColumn", AliasUtils.column(yColumnName));
         EntityWrapper<ContractSigningEntity> ew = new EntityWrapper<ContractSigningEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
                                                             if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
                     if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
                                                 //获取结果
         List<Map<String, Object>> result = contractSigningService.selectValue(params, ew);
@@ -292,12 +319,12 @@ public class ContractSigningController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         //构建查询统计条件
         EntityWrapper<ContractSigningEntity> ew = new EntityWrapper<ContractSigningEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
         for(int i=0;i<yColumnNames.length;i++) {
             params.put("yColumn", AliasUtils.column(yColumnNames[i]));
@@ -332,12 +359,12 @@ public class ContractSigningController {
         params.put("timeStatType", timeStatType);
         //构建查询统计条件
         EntityWrapper<ContractSigningEntity> ew = new EntityWrapper<ContractSigningEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
         List<Map<String, Object>> result = contractSigningService.selectTimeStatValue(params, ew);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -372,12 +399,12 @@ public class ContractSigningController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         //构建查询统计条件
         EntityWrapper<ContractSigningEntity> ew = new EntityWrapper<ContractSigningEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
         for(int i=0;i<yColumnNames.length;i++) {
             params.put("yColumn", AliasUtils.column(yColumnNames[i]));
@@ -410,12 +437,12 @@ public class ContractSigningController {
         params.put("column", AliasUtils.column(columnName));
         //构建查询统计条件
         EntityWrapper<ContractSigningEntity> ew = new EntityWrapper<ContractSigningEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            ew.eq("account", (String)request.getSession().getAttribute("username"));
+            ew.eq("account", (String)request.getAttribute("username"));
         }
         List<Map<String, Object>> result = contractSigningService.selectGroup(params, ew);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -438,12 +465,12 @@ public class ContractSigningController {
      */
     @RequestMapping("/count")
     public R count(@RequestParam Map<String, Object> params,ContractSigningEntity hetongqianding, HttpServletRequest request){
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            hetongqianding.setDeveloperCode((String)request.getSession().getAttribute("username"));
+            hetongqianding.setDeveloperCode((String)request.getAttribute("username"));
         }
         if(tableName.equals("user")) {
-            hetongqianding.setAccount((String)request.getSession().getAttribute("username"));
+            hetongqianding.setAccount((String)request.getAttribute("username"));
         }
         EntityWrapper<ContractSigningEntity> ew = new EntityWrapper<ContractSigningEntity>();
         int count = contractSigningService.selectCount(MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, hetongqianding), params), params));

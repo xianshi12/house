@@ -293,7 +293,7 @@ public class NewsController {
      */
     @RequestMapping("/autoSort2")
     public R autoSort2(@RequestParam Map<String, Object> params,NewsEntity news, HttpServletRequest request){
-        String userId = request.getSession().getAttribute("userId").toString();
+        String userId = request.getAttribute("userId").toString();
         String inteltypeColumn = "typename";
         // 查询收藏集合
         List<StoreupEntity> storeups = storeupService.selectList(new EntityWrapper<StoreupEntity>().eq("type", 1).eq("userid", userId).eq("tablename", "news").orderBy("addtime", false));

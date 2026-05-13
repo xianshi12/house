@@ -176,6 +176,7 @@ export default {
 					this.$http.get(`${this.loginForm.tableName}/login`, {params: this.loginForm}).then(res => {
 						if (res.data.code === 0) {
 							localStorage.setItem('frontToken', res.data.token);
+							localStorage.setItem('frontRefreshToken', res.data.refreshToken || '');
 							localStorage.setItem('UserTableName', this.loginForm.tableName);
 							localStorage.setItem('username', this.loginForm.username);
 							localStorage.setItem('frontSessionTable', this.loginForm.tableName);

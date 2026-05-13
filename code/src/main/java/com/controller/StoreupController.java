@@ -63,8 +63,8 @@ public class StoreupController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,StoreupEntity storeup,
 		HttpServletRequest request){
-        if(!request.getSession().getAttribute("role").toString().equals("管理员")) {
-            storeup.setUserid((Long)request.getSession().getAttribute("userId"));
+        if(!request.getAttribute("role").toString().equals("管理员")) {
+            storeup.setUserid((Long)request.getAttribute("userId"));
         }
         //设置查询条件
         EntityWrapper<StoreupEntity> ew = new EntityWrapper<StoreupEntity>();
@@ -176,7 +176,7 @@ public class StoreupController {
     }
 
     private R prepareStoreup(StoreupEntity storeup, HttpServletRequest request) {
-        Object userIdObj = request.getSession().getAttribute("userId");
+        Object userIdObj = request.getAttribute("userId");
         if (userIdObj == null) {
             return R.error(401, "请先登录后再收藏");
         }

@@ -1,15 +1,13 @@
 package com.service.impl;
 
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
@@ -37,7 +35,12 @@ public class TokenServiceImpl extends ServiceImpl<TokenDao, TokenEntity> impleme
 	@Autowired
 	private RedisUtils redisUtils;
 
-	private static final String TOKEN_PREFIX = "token:";
+	@Value("${jwt.access-token-expiration}")
+	private Long accessTokenExpiration;
+
+	@Value("${jwt.refresh-token-expiration}")
+	private Long refreshTokenExpiration;
+
 	private static final String REFRESH_PREFIX = "refresh:";
 
 	@Override
@@ -65,37 +68,10 @@ public class TokenServiceImpl extends ServiceImpl<TokenDao, TokenEntity> impleme
 
 	@Override
 	public Map<String, String> generateToken(Long userid, String username, String tableName, String role) {
-		// 数据库 token 字段是 varchar(200)，JWT 访问令牌会超过长度限制。
-		// 权限拦截器按 token 表/Redis 查会话，所以访问令牌保持为短随机串更兼容现有库表。
-		String accessToken = UUID.randomUUID().toString().replace("-", "");
-		// 生成刷新令牌(7天)
+		String accessToken = jwtUtils.generateAccessToken(userid, username, tableName, role);
 		String refreshToken = jwtUtils.generateRefreshToken(userid, username, tableName, role);
-
-		// accessToken缓存到Redis(30分钟)
-		String accessKey = TOKEN_PREFIX + accessToken;
-		Map<String, Object> tokenInfo = new HashMap<>();
-		tokenInfo.put("userId", userid);
-		tokenInfo.put("username", username);
-		tokenInfo.put("tableName", tableName);
-		tokenInfo.put("role", role);
-		redisUtils.set(accessKey, tokenInfo, 30, TimeUnit.MINUTES);
-
-		// refreshToken缓存到Redis(7天)
-		String refreshKey = REFRESH_PREFIX + refreshToken;
-		redisUtils.set(refreshKey, tokenInfo, 7, TimeUnit.DAYS);
-
-		// 同步保存到DB(保持兼容性)
-		TokenEntity tokenEntity = this.selectOne(new EntityWrapper<TokenEntity>().eq("userid", userid).eq("role", role));
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(new Date());
-		cal.add(Calendar.HOUR_OF_DAY, 1);
-		if(tokenEntity != null) {
-			tokenEntity.setToken(accessToken);
-			tokenEntity.setExpiratedtime(cal.getTime());
-			this.updateById(tokenEntity);
-		} else {
-			this.insert(new TokenEntity(userid, username, tableName, role, accessToken, cal.getTime()));
-		}
+		Map<String, Object> tokenInfo = buildTokenInfo(userid, username, tableName, role);
+		cacheRefreshToken(refreshToken, tokenInfo);
 
 		Map<String, String> result = new HashMap<>();
 		result.put("token", accessToken);
@@ -105,33 +81,21 @@ public class TokenServiceImpl extends ServiceImpl<TokenDao, TokenEntity> impleme
 
 	@Override
 	public TokenEntity getTokenEntity(String token) {
-		// 优先从Redis获取
-		String accessKey = TOKEN_PREFIX + token;
-		Object cached = redisUtils.get(accessKey);
-		if (cached != null) {
-			@SuppressWarnings("unchecked")
-			Map<String, Object> tokenInfo = (Map<String, Object>) cached;
-			TokenEntity entity = new TokenEntity();
-			entity.setUserid(Long.valueOf(tokenInfo.get("userId").toString()));
-			entity.setUsername((String) tokenInfo.get("username"));
-			entity.setTablename((String) tokenInfo.get("tableName"));
-			entity.setRole((String) tokenInfo.get("role"));
-			entity.setToken(token);
-			entity.setExpiratedtime(new Date(System.currentTimeMillis() + 30 * 60 * 1000));
-			return entity;
-		}
-
-		// Redis未命中，回退DB查询
-		TokenEntity tokenEntity = this.selectOne(new EntityWrapper<TokenEntity>().eq("token", token));
-		if(tokenEntity == null || tokenEntity.getExpiratedtime().getTime() < new Date().getTime()) {
+		if (!jwtUtils.validateToken(token) || !jwtUtils.isAccessToken(token)) {
 			return null;
 		}
-		return tokenEntity;
+		io.jsonwebtoken.Claims claims = jwtUtils.parseToken(token);
+		TokenEntity entity = new TokenEntity();
+		entity.setUserid(Long.valueOf(claims.get("userId").toString()));
+		entity.setUsername((String) claims.get("username"));
+		entity.setTablename((String) claims.get("tableName"));
+		entity.setRole((String) claims.get("role"));
+		entity.setToken(token);
+		return entity;
 	}
 
 	@Override
 	public Map<String, String> refreshToken(String refreshToken) {
-		// 验证刷新令牌
 		if (!jwtUtils.validateToken(refreshToken) || !jwtUtils.isRefreshToken(refreshToken)) {
 			return null;
 		}
@@ -149,10 +113,23 @@ public class TokenServiceImpl extends ServiceImpl<TokenDao, TokenEntity> impleme
 		String tableName = (String) tokenInfo.get("tableName");
 		String role = (String) tokenInfo.get("role");
 
-		// 删除旧的refreshToken
-		redisUtils.delete(refreshKey);
+		String accessToken = jwtUtils.generateAccessToken(userId, username, tableName, role);
+		Map<String, String> result = new HashMap<>();
+		result.put("token", accessToken);
+		result.put("refreshToken", refreshToken);
+		return result;
+	}
 
-		// 生成新的令牌对
-		return generateToken(userId, username, tableName, role);
+	private Map<String, Object> buildTokenInfo(Long userid, String username, String tableName, String role) {
+		Map<String, Object> tokenInfo = new HashMap<>();
+		tokenInfo.put("userId", userid);
+		tokenInfo.put("username", username);
+		tokenInfo.put("tableName", tableName);
+		tokenInfo.put("role", role);
+		return tokenInfo;
+	}
+
+	private void cacheRefreshToken(String refreshToken, Map<String, Object> tokenInfo) {
+		redisUtils.set(REFRESH_PREFIX + refreshToken, tokenInfo, refreshTokenExpiration, TimeUnit.MILLISECONDS);
 	}
 }

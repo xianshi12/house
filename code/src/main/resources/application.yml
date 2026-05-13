@@ -39,7 +39,7 @@ spring:
 # JWT
 jwt:
   secret: houseSaleSystemSecretKey2025HouseSaleSystemSecretKey2025
-  access-token-expiration: 1800000
+  access-token-expiration: 900000
   refresh-token-expiration: 604800000
 
 #mybatis

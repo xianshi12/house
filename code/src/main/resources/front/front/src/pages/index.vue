@@ -343,6 +343,7 @@ export default {
 		},
 		goBackend() {
 			localStorage.setItem('Token', localStorage.getItem('frontToken'));
+			localStorage.setItem('RefreshToken', localStorage.getItem('frontRefreshToken'));
 			localStorage.setItem('role', localStorage.getItem('frontRole'));
 			localStorage.setItem('sessionTable', localStorage.getItem('frontSessionTable'));
 			localStorage.setItem('headportrait', localStorage.getItem('frontHeadportrait'));

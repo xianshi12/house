@@ -86,7 +86,6 @@ public class DeveloperController {
      */
     @RequestMapping(value = "logout")
     public R logout(HttpServletRequest request) {
-        request.getSession().invalidate();
         return R.ok("退出成功");
     }
 
@@ -139,7 +138,7 @@ public class DeveloperController {
      */
     @RequestMapping("/session")
     public R getCurrUser(HttpServletRequest request) {
-        Long id = (Long) request.getSession().getAttribute("userId");
+        Long id = (Long) request.getAttribute("userId");
         DeveloperEntity developer = developerService.selectById(id);
         return R.ok().put("data", developer);
     }

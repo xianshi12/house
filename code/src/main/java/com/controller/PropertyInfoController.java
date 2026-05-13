@@ -74,9 +74,9 @@ public class PropertyInfoController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,PropertyInfoEntity fangyuanxinxi,
 		HttpServletRequest request){
-		String tableName = request.getSession().getAttribute("tableName").toString();
+		String tableName = request.getAttribute("tableName").toString();
 		if(tableName.equals("developer")) {
-			fangyuanxinxi.setDeveloperCode((String)request.getSession().getAttribute("username"));
+			fangyuanxinxi.setDeveloperCode((String)request.getAttribute("username"));
 		}
         //设置查询条件
         EntityWrapper<PropertyInfoEntity> ew = new EntityWrapper<PropertyInfoEntity>();
@@ -264,7 +264,7 @@ public class PropertyInfoController {
      */
     @RequestMapping("/autoSort2")
     public R autoSort2(@RequestParam Map<String, Object> params,PropertyInfoEntity fangyuanxinxi, HttpServletRequest request){
-        String userId = request.getSession().getAttribute("userId").toString();
+        String userId = request.getAttribute("userId").toString();
         Integer limit = params.get("limit")==null?10:Integer.parseInt(params.get("limit").toString());
         List<StoreupEntity> storeups = storeupService.selectList(new EntityWrapper<StoreupEntity>().eq("type", 1).eq("tablename", "property_info"));
         // 创建协同过滤对象
@@ -324,9 +324,9 @@ public class PropertyInfoController {
         params.put("xColumn", AliasUtils.column(xColumnName));
         params.put("yColumn", AliasUtils.column(yColumnName));
         EntityWrapper<PropertyInfoEntity> ew = new EntityWrapper<PropertyInfoEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
                                                     if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
                                         //获取结果
         List<Map<String, Object>> result = propertyInfoService.selectValue(params, ew);
@@ -373,9 +373,9 @@ public class PropertyInfoController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         //构建查询统计条件
         EntityWrapper<PropertyInfoEntity> ew = new EntityWrapper<PropertyInfoEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         for(int i=0;i<yColumnNames.length;i++) {
             params.put("yColumn", AliasUtils.column(yColumnNames[i]));
@@ -409,9 +409,9 @@ public class PropertyInfoController {
         params.put("timeStatType", timeStatType);
         //构建查询统计条件
         EntityWrapper<PropertyInfoEntity> ew = new EntityWrapper<PropertyInfoEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         List<Map<String, Object>> result = propertyInfoService.selectTimeStatValue(params, ew);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -445,9 +445,9 @@ public class PropertyInfoController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         //构建查询统计条件
         EntityWrapper<PropertyInfoEntity> ew = new EntityWrapper<PropertyInfoEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         for(int i=0;i<yColumnNames.length;i++) {
             params.put("yColumn", AliasUtils.column(yColumnNames[i]));
@@ -479,9 +479,9 @@ public class PropertyInfoController {
         params.put("column", AliasUtils.column(columnName));
         //构建查询统计条件
         EntityWrapper<PropertyInfoEntity> ew = new EntityWrapper<PropertyInfoEntity>();
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            ew.eq("developer_code", (String)request.getSession().getAttribute("username"));
+            ew.eq("developer_code", (String)request.getAttribute("username"));
         }
         List<Map<String, Object>> result = propertyInfoService.selectGroup(params, ew);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -504,9 +504,9 @@ public class PropertyInfoController {
      */
     @RequestMapping("/count")
     public R count(@RequestParam Map<String, Object> params,PropertyInfoEntity fangyuanxinxi, HttpServletRequest request){
-        String tableName = request.getSession().getAttribute("tableName").toString();
+        String tableName = request.getAttribute("tableName").toString();
         if(tableName.equals("developer")) {
-            fangyuanxinxi.setDeveloperCode((String)request.getSession().getAttribute("username"));
+            fangyuanxinxi.setDeveloperCode((String)request.getAttribute("username"));
         }
         EntityWrapper<PropertyInfoEntity> ew = new EntityWrapper<PropertyInfoEntity>();
         int count = propertyInfoService.selectCount(MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, fangyuanxinxi), params), params));

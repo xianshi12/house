@@ -212,7 +212,7 @@ public class PropertyCommentController {
     }
 
     private void fillCurrentCommentUser(PropertyCommentEntity propertyComment, HttpServletRequest request) {
-        Object userIdObj = request.getSession().getAttribute("userId");
+        Object userIdObj = request.getAttribute("userId");
         if (!(userIdObj instanceof Long)) {
             return;
         }

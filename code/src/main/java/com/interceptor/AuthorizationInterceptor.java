@@ -57,6 +57,12 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
         //从header中获取token
         String token = request.getHeader(LOGIN_TOKEN_KEY);
+        if (StringUtils.isBlank(token)) {
+            String authorization = request.getHeader("Authorization");
+            if (StringUtils.isNotBlank(authorization) && authorization.startsWith("Bearer ")) {
+                token = authorization.substring(7);
+            }
+        }
 
         /**
          * 不需要验证权限的方法直接放过
@@ -71,10 +77,10 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         }
 
         if(tokenEntity != null) {
-        	request.getSession().setAttribute("userId", tokenEntity.getUserid());
-        	request.getSession().setAttribute("role", tokenEntity.getRole());
-        	request.getSession().setAttribute("tableName", tokenEntity.getTablename());
-        	request.getSession().setAttribute("username", tokenEntity.getUsername());
+        	request.setAttribute("userId", tokenEntity.getUserid());
+        	request.setAttribute("role", tokenEntity.getRole());
+        	request.setAttribute("tableName", tokenEntity.getTablename());
+        	request.setAttribute("username", tokenEntity.getUsername());
         	return true;
         }
 
